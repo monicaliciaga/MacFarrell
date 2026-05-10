@@ -392,48 +392,29 @@
 <script>
   // ── DATA ──
   const places1 = [
-    {
-      name: "Torre de Martell",
-      lat: 39.865155, lng: 3.136700,
-      fictional: true,
-      note: "Hotel ficticio. Residencia de los personajes principales."
-    },
-    {
-      name: "Puerto de Can Picafort",
-      lat: 39.765809, lng: 3.159495,
-      fictional: false,
-      note: "Puerto pesquero y deportivo en la bahía de Alcudia."
-    },
-    {
-      name: "Las Salinas",
-      lat: 39.337993, lng: 3.051820,
-      fictional: false,
-      note: "Reserva natural en el sur de la isla."
-    },
-    {
-      name: "Porta de Vila Roja",
-      lat: 39.855106, lng: 3.121406,
-      fictional: false,
-      note: "Enclave en la costa nordeste de Mallorca."
-    },
-    {
-      name: "Ermita de la Victoria",
-      lat: 39.872972, lng: 3.171079,
-      fictional: false,
-      note: "Ermita del siglo XVII en el cabo de Pinar."
-    },
-    {
-      name: "Mirador",
-      lat: 39.880560, lng: 3.177836,
-      fictional: false,
-      note: "Vista panorámica sobre la bahía de Pollença."
-    },
-    {
-      name: "La Albufera",
-      lat: 39.771332, lng: 3.122355,
-      fictional: false,
-      note: "Parque natural, el humedal más grande de Baleares."
-    }
+    { name: "Torre de Martell", lat: 39.865155, lng: 3.136700, fictional: true, note: "Hotel ficticio. Residencia de los personajes principales." },
+    { name: "Playa de Sant Pere", lat: 39.864481, lng: 3.137843, fictional: true, note: "Playa a la izquierda de la Torre de Martell." },
+    { name: "Playa de Sant Joan", lat: 39.865352, lng: 3.135282, fictional: true, note: "Playa a la derecha de la Torre de Martell." },
+    { name: "Chiringuito de Chente", lat: 39.864567, lng: 3.138264, fictional: true, note: "Bar de playa ficticio, frente a la Torre de Martell." },
+    { name: "Puerto de Can Picafort", lat: 39.765809, lng: 3.159495, fictional: false, note: "Puerto pesquero y deportivo en la bahía de Alcudia." },
+    { name: "Puerto de Alcúdia", lat: 39.853400, lng: 3.121700, fictional: false, note: "Puerto principal de la bahía de Alcúdia." },
+    { name: "La Albufera", lat: 39.771332, lng: 3.122355, fictional: false, note: "Parque natural, el humedal más grande de Baleares." },
+    { name: "Manacor", lat: 39.706900, lng: 3.206900, fictional: false, note: "Segunda ciudad de Mallorca, en el interior de la isla." },
+    { name: "Las Salinas", lat: 39.337993, lng: 3.051820, fictional: false, note: "Reserva natural en el sur de la isla." },
+    { name: "Palma", lat: 39.569600, lng: 2.650200, fictional: false, note: "Capital de las Islas Baleares." },
+    { name: "Aeropuerto de Palma", lat: 39.551700, lng: 2.738800, fictional: false, note: "Aeropuerto Son Sant Joan. Puerta de entrada y salida de la isla." },
+    { name: "Carretera de Tito Cittadini / Sant Xoan", lat: 39.720000, lng: 2.980000, fictional: true, note: "Tramo ficticio en la ruta Palma–Torre de Martell." },
+    { name: "Porta de Vila Roja", lat: 39.855106, lng: 3.121406, fictional: false, note: "Enclave en la costa nordeste de Mallorca." },
+    { name: "Ermita de la Victoria", lat: 39.872972, lng: 3.171079, fictional: false, note: "Ermita del siglo XVII en el cabo de Pinar." },
+    { name: "Mirador", lat: 39.880560, lng: 3.177836, fictional: false, note: "Vista panorámica sobre la bahía de Pollença." },
+    { name: "Castillo de Dunarkag", lat: 56.665451, lng: -5.228100, fictional: true, scotland: true, note: "Castillo ficticio en las Highlands escocesas. Lugar de procedencia de los escoceses. Escenario principal del Libro II." },
+    { name: "Valaria", lat: 55.8767149, lng: -4.2923372, fictional: false, scotland: true, note: "Pastelería en 333 Byres Rd, Glasgow. Aquí compra Donnie los scones de arándanos para Paquita. Lamentablemente cerrada." },
+    { name: "Carnicería Los Gauchos", lat: 39.5810981, lng: 2.654986, fictional: false, note: "Plaça d\'Alexander Fleming, 3, Palma. Un trozo de Argentina en el corazón de Mallorca." }
+,
+    { name: "Teatro Ex Quarter", lat: 39.6146115, lng: 3.1151629, fictional: false, note: "Carrer Des Sol, 5, Petra. Teatro en el pueblo de Petra, en el interior de Mallorca." },
+    { name: "Cuartel General del MI6", lat: 51.4872679, lng: -0.1243762, fictional: false, scotland: true, note: "SIS Building, 85 Albert Embankment, Londres. Vauxhall Cross, a orillas del Támesis." },
+    { name: "Racó d'Alcúdia", lat: 39.856511, lng: 3.135261, fictional: true, note: "Lugar ficticio en las inmediaciones de la bahía de Alcúdia." },
+    { name: "Torres de Turia", lat: 39.4809296, lng: -0.3732739, fictional: false, scotland: true, note: "Carrer de Santa Amàlia, 2, La Saïdia, Valencia." }
   ];
 
   // ── MAP INIT ──
@@ -488,30 +469,30 @@
 
   // ── BUILD MARKERS & LIST ──
   const markers1 = [];
+  const mallorcaMarkers = [];
   const list = document.getElementById('place-list-1');
 
   places1.forEach((p, i) => {
-    // Marker
     const marker = L.marker([p.lat, p.lng], { icon: makeIcon(p.fictional) })
       .addTo(map1)
       .bindPopup(`
         <div class="popup-title">${p.name}</div>
-        <div class="popup-tag">${p.fictional ? '✦ Lugar ficticio' : '◆ Lugar real'}</div>
+        <div class="popup-tag">${p.fictional ? '✦ Lugar ficticio' : '◆ Lugar real'}${p.scotland ? ' &nbsp;·&nbsp; 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia' : ''}</div>
         <p style="margin-top:0.4rem;font-size:0.9rem;color:#4a3f30;">${p.note}</p>
       `);
     markers1.push(marker);
+    if (!p.scotland) mallorcaMarkers.push(marker);
 
-    // List item
     const li = document.createElement('li');
     li.className = 'place-item';
     li.innerHTML = `
       <div class="place-name ${p.fictional ? 'fictional' : ''}">
-        ${p.name}
+        ${p.scotland ? '🏴󠁧󠁢󠁳󠁣󠁴󠁿 ' : ''}${p.name}
         ${p.fictional ? '<span class="place-tag">ficticio</span>' : ''}
       </div>
     `;
     li.addEventListener('click', () => {
-      map1.setView([p.lat, p.lng], 14, { animate: true });
+      map1.setView([p.lat, p.lng], p.scotland ? 10 : 14, { animate: true });
       marker.openPopup();
     });
     list.appendChild(li);
@@ -526,9 +507,9 @@
     if (n === 1) setTimeout(() => map1.invalidateSize(), 50);
   }
 
-  // Fit map to markers on load
-  const group1 = L.featureGroup(markers1);
-  map1.fitBounds(group1.getBounds().pad(0.15));
+  // Fit map to Mallorca markers only (Dunarkag accessible via sidebar click)
+  const group1 = L.featureGroup(mallorcaMarkers);
+  map1.fitBounds(group1.getBounds().pad(0.12));
 </script>
 </body>
 </html>

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Serie MacFarrell — Mapa de escenarios</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=EB+Garamond:ital,wght@0,400;1,400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --cream: #f5f0e8;
+      --parchment: #ede5d0;
+      --ink: #1a1408;
+      --gold: #b8963e;
+      --gold-light: #d4af6a;
+      --wine: #6b2737;
+      --muted: #7a6e5f;
+      --border: #c9b99a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background-color: var(--cream);
+      color: var(--ink);
+      font-family: 'EB Garamond', Georgia, serif;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background-color: var(--ink);
+      padding: 2.5rem 2rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 40px,
+        rgba(184,150,62,0.04) 40px,
+        rgba(184,150,62,0.04) 41px
+      );
+    }
+
+    .header-ornament {
+      color: var(--gold);
+      font-size: 1rem;
+      letter-spacing: 0.4em;
+      font-family: 'Cinzel', serif;
+      opacity: 0.7;
+      margin-bottom: 0.75rem;
+    }
+
+    header h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 600;
+      color: var(--cream);
+      letter-spacing: 0.12em;
+      line-height: 1.1;
+    }
+
+    header h1 span {
+      color: var(--gold);
+    }
+
+    .header-subtitle {
+      margin-top: 0.9rem;
+      color: var(--border);
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+    }
+
+    .header-rule {
+      width: 120px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+      margin: 1.2rem auto 0;
+    }
+
+    /* ── TABS ── */
+    .tabs-container {
+      background: var(--parchment);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      padding: 0 1rem;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      padding: 1rem 1.8rem;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.25s;
+      white-space: nowrap;
+      position: relative;
+    }
+
+    .tab-btn:hover { color: var(--ink); }
+
+    .tab-btn.active {
+      color: var(--wine);
+      border-bottom-color: var(--wine);
+    }
+
+    .tab-btn .tab-num {
+      display: block;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      font-family: 'Cinzel', serif;
+      color: var(--gold);
+      margin-bottom: 0.2rem;
+    }
+
+    .tab-btn.coming-soon {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    /* ── CONTENT PANELS ── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .panel-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      min-height: calc(100vh - 200px);
+    }
+
+    @media (max-width: 768px) {
+      .panel-layout { grid-template-columns: 1fr; }
+      .sidebar { order: 2; }
+      .map-wrap { order: 1; height: 55vw; min-height: 300px; }
+    }
+
+    /* ── MAP ── */
+    .map-wrap {
+      position: relative;
+      height: calc(100vh - 200px);
+      min-height: 420px;
+    }
+
+    #map1 { width: 100%; height: 100%; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      background: var(--parchment);
+      border-left: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 2rem 1.6rem;
+    }
+
+    .sidebar-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 1.4rem;
+    }
+
+    .book-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-style: italic;
+      color: var(--ink);
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+      border-left: 3px solid var(--wine);
+      padding-left: 0.8rem;
+    }
+
+    .book-location-tag {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      padding-left: 1.1rem;
+    }
+
+    .place-list { list-style: none; }
+
+    .place-item {
+      padding: 0.7rem 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+      border-radius: 3px;
+      padding-left: 0.5rem;
+    }
+
+    .place-item:hover { background: rgba(184,150,62,0.1); padding-left: 0.8rem; }
+    .place-item:last-child { border-bottom: none; }
+
+    .place-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .place-name::before {
+      content: '◆';
+      color: var(--gold);
+      font-size: 0.4rem;
+      flex-shrink: 0;
+    }
+
+    .place-name.fictional::before { color: var(--wine); }
+
+    .place-tag {
+      font-size: 0.7rem;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.1em;
+      color: var(--wine);
+      margin-left: 1rem;
+    }
+
+    .sidebar-note {
+      margin-top: 2rem;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: rgba(255,255,255,0.4);
+    }
+
+    .sidebar-note p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    /* ── COMING SOON PANELS ── */
+    .coming-soon-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      padding: 3rem;
+      flex-direction: column;
+      text-align: center;
+      gap: 1rem;
+    }
+
+    .coming-soon-panel .cs-icon {
+      font-size: 3rem;
+      opacity: 0.3;
+    }
+
+    .coming-soon-panel h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+    }
+
+    .coming-soon-panel p {
+      font-style: italic;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--ink);
+      color: var(--border);
+      text-align: center;
+      padding: 1.2rem;
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+    }
+
+    /* ── LEAFLET CUSTOM ── */
+    .leaflet-popup-content-wrapper {
+      border-radius: 2px;
+      border: 1px solid var(--border);
+      font-family: 'Cormorant Garamond', serif;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .popup-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+      margin-bottom: 0.3rem;
+    }
+
+    .popup-tag {
+      font-size: 0.7rem;
+      color: var(--wine);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-ornament">✦ &nbsp; SERIE &nbsp; ✦</div>
+  <h1>Mac<span>Farrell</span></h1>
+  <p class="header-subtitle">Los escenarios de la serie</p>
+  <div class="header-rule"></div>
+</header>
+
+<!-- TABS -->
+<nav class="tabs-container">
+  <button class="tab-btn active" onclick="showTab(1, this)">
+    <span class="tab-num">LIBRO I</span>
+    La paz de Mallorca
+  </button>
+  <button class="tab-btn coming-soon" onclick="return false">
+    <span class="tab-num">LIBRO II</span>
+    El muerto de Margareth
+  </button>
+  <button class="tab-btn coming-soon" onclick="return false">
+    <span class="tab-num">LIBRO III</span>
+    Los palafitos de Mainau
+  </button>
+</nav>
+
+<!-- PANEL 1: MALLORCA -->
+<div class="panel active" id="panel-1">
+  <div class="panel-layout">
+    <div class="map-wrap">
+      <div id="map1"></div>
+    </div>
+    <aside class="sidebar">
+      <p class="sidebar-title">Escenarios</p>
+      <h2 class="book-title">La paz de Mallorca</h2>
+      <p class="book-location-tag">🇪🇸 &nbsp; Mallorca, Islas Baleares</p>
+
+      <ul class="place-list" id="place-list-1"></ul>
+
+      <div class="sidebar-note">
+        <p>Hacé clic en cualquier lugar de la lista o del mapa para explorar. Podés desplazarte libremente por la isla y sus alrededores.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- PANEL 2: HIGHLANDS (próximamente) -->
+<div class="panel" id="panel-2">
+  <div class="coming-soon-panel">
+    <div class="cs-icon">🏴󠁧󠁢󠁳󠁣󠁴󠁿</div>
+    <h3>Próximamente</h3>
+    <p><em>El muerto de Margareth</em> — Highlands, Escocia</p>
+  </div>
+</div>
+
+<!-- PANEL 3: MAINAU (próximamente) -->
+<div class="panel" id="panel-3">
+  <div class="coming-soon-panel">
+    <div class="cs-icon">🌸</div>
+    <h3>Próximamente</h3>
+    <p><em>Los palafitos de Mainau</em> — Isla de Mainau, Lago Constanza</p>
+  </div>
+</div>
+
+<footer>SERIE MACFARRELL &nbsp;·&nbsp; MAPA DE ESCENARIOS</footer>
+
+<script>
+  // ── DATA ──
+  const places1 = [
+    {
+      name: "Torre de Martell",
+      lat: 39.865155, lng: 3.136700,
+      fictional: true,
+      note: "Hotel ficticio. Residencia de los personajes principales."
+    },
+    {
+      name: "Puerto de Can Picafort",
+      lat: 39.765809, lng: 3.159495,
+      fictional: false,
+      note: "Puerto pesquero y deportivo en la bahía de Alcudia."
+    },
+    {
+      name: "Las Salinas",
+      lat: 39.337993, lng: 3.051820,
+      fictional: false,
+      note: "Reserva natural en el sur de la isla."
+    },
+    {
+      name: "Porta de Vila Roja",
+      lat: 39.855106, lng: 3.121406,
+      fictional: false,
+      note: "Enclave en la costa nordeste de Mallorca."
+    },
+    {
+      name: "Ermita de la Victoria",
+      lat: 39.872972, lng: 3.171079,
+      fictional: false,
+      note: "Ermita del siglo XVII en el cabo de Pinar."
+    },
+    {
+      name: "Mirador",
+      lat: 39.880560, lng: 3.177836,
+      fictional: false,
+      note: "Vista panorámica sobre la bahía de Pollença."
+    },
+    {
+      name: "La Albufera",
+      lat: 39.771332, lng: 3.122355,
+      fictional: false,
+      note: "Parque natural, el humedal más grande de Baleares."
+    }
+  ];
+
+  // ── MAP INIT ──
+  const map1 = L.map('map1', {
+    center: [39.7, 3.05],
+    zoom: 10,
+    zoomControl: true
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19
+  }).addTo(map1);
+
+  // Custom icon factory
+  function makeIcon(fictional) {
+    return L.divIcon({
+      className: '',
+      html: `<div style="
+        width:14px; height:14px;
+        background:${fictional ? '#6b2737' : '#b8963e'};
+        border: 2px solid #1a1408;
+        border-radius:50%;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      "></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7],
+      popupAnchor: [0, -10]
+    });
+  }
+
+  // ── BUILD MARKERS & LIST ──
+  const markers1 = [];
+  const list = document.getElementById('place-list-1');
+
+  places1.forEach((p, i) => {
+    // Marker
+    const marker = L.marker([p.lat, p.lng], { icon: makeIcon(p.fictional) })
+      .addTo(map1)
+      .bindPopup(`
+        <div class="popup-title">${p.name}</div>
+        <div class="popup-tag">${p.fictional ? '✦ Lugar ficticio' : '◆ Lugar real'}</div>
+        <p style="margin-top:0.4rem;font-size:0.9rem;color:#4a3f30;">${p.note}</p>
+      `);
+    markers1.push(marker);
+
+    // List item
+    const li = document.createElement('li');
+    li.className = 'place-item';
+    li.innerHTML = `
+      <div class="place-name ${p.fictional ? 'fictional' : ''}">
+        ${p.name}
+        ${p.fictional ? '<span class="place-tag">ficticio</span>' : ''}
+      </div>
+    `;
+    li.addEventListener('click', () => {
+      map1.setView([p.lat, p.lng], 14, { animate: true });
+      marker.openPopup();
+    });
+    list.appendChild(li);
+  });
+
+  // ── TABS ──
+  function showTab(n, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + n).classList.add('active');
+    btn.classList.add('active');
+    if (n === 1) setTimeout(() => map1.invalidateSize(), 50);
+  }
+
+  // Fit map to markers on load
+  const group1 = L.featureGroup(markers1);
+  map1.fitBounds(group1.getBounds().pad(0.15));
+</script>
+</body>
+</html>
